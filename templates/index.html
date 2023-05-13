@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>My App</title>
+  <style>
+    body {
+      height: 100vh;
+      /* max-height: 600px; */
+      width: 100%;
+      background-color: hsla(200, 40%, 30%, .4);
+      background-image:
+        url('https://78.media.tumblr.com/cae86e76225a25b17332dfc9cf8b1121/tumblr_p7n8kqHMuD1uy4lhuo1_540.png'),
+        url('https://78.media.tumblr.com/66445d34fe560351d474af69ef3f2fb0/tumblr_p7n908E1Jb1uy4lhuo1_1280.png'),
+        url('https://78.media.tumblr.com/8cd0a12b7d9d5ba2c7d26f42c25de99f/tumblr_p7n8kqHMuD1uy4lhuo2_1280.png'),
+        url('https://78.media.tumblr.com/5ecb41b654f4e8878f59445b948ede50/tumblr_p7n8on19cV1uy4lhuo1_1280.png'),
+        url('https://78.media.tumblr.com/28bd9a2522fbf8981d680317ccbf4282/tumblr_p7n8kqHMuD1uy4lhuo3_1280.png');
+      background-repeat: repeat-x;
+      background-position:
+        0 20%,
+        0 100%,
+        0 50%,
+        0 100%,
+        0 0;
+      background-size:
+        2500px,
+        800px,
+        500px 200px,
+        1000px,
+        400px 260px;
+      animation: 50s para infinite linear;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    @keyframes para {
+      100% {
+        background-position:
+          -5000px 20%,
+          -800px 95%,
+          500px 50%,
+          1000px 100%,
+          400px 0;
+      }
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: bold;
+      text-align: center;
+      margin: 0;
+      color: #fff000;
+    }
+
+    p {
+      font-size: 24px;
+      margin-bottom: 30px;
+      text-align: center;
+      color: #fff000;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    li {
+      margin: 10px;
+    }
+
+    button {
+      background-color: #3c3c3c;
+      color: #fff000;
+      border: none;
+      padding: 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #fff000;
+      color: #3c3c3c;
+    }
+  </style>
+  <script>
+    function openPage(url) {
+      if (window.activePage) {
+        window.activePage.close();
+      }
+      window.activePage = window.open(url);
+    }
+  </script>
+</head>
+
+<body>
+  <h1>Welcome to My App</h1>
+  <p>Please select an option:</p>
+  <ul>
+    <li><button onclick="openPage('/take_images')">Take Images</button></li>
+    <li><button onclick="openPage('/train')">Train Model</button></li>
+    <li><button onclick="openPage('/hand_gesture')">Hand Gesture</button></li>
+  </ul>
+</body>
+
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Model</title>
+    <style>
+        body {
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #5b5b5b;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        body.video-feed-displayed {
+            height: 99vh;
+        }
+
+        button {
+            width: 30%;
+            margin-bottom: 10px;
+            background-color: #3c3c3c;
+            color: #fff000;
+            border: none;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #fff000;
+            color: #3c3c3c;
+        }
+
+        #video_feed {
+            display: none;
+            max-width: 100%;
+            height: auto;
+        }
+
+        body.video-feed-displayed #video_feed {
+            display: block;
+        }
+
+        h1 {
+            font-size: 36px;
+            text-align: left;
+            margin-bottom: 10px;
+            color: #fff000;
+        }
+
+        p {
+            font-size: 24px;
+            text-align: left;
+            color: #fff000;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 10px;
+            padding: 10px;
+            flex-wrap: wrap;
+            border: 2px solid #ffee00;
+            background: #1b1b1b;
+            background-image: url("/static/images/bg.jpg");
+            background-size: cover;
+            box-shadow: 4px 4px 7px #333;
+            overflow: hidden;
+        }
+
+        #left {
+            float: left;
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: left;
+        }
+
+        #right {
+            align-items: center;
+            display: flex;
+            justify-content: left;
+            float: left;
+            width: 50%;
+        }
+
+        img {
+            border: 3px solid #ffee00;
+            border-radius: 10px;
+            margin-right: 0;
+        }
+
+        table {
+            border: none;
+            border-collapse: collapse;
+            font-size: larger;
+            color: #fff000;
+            margin-bottom: 20px;
+        }
+
+        a {
+            font-size: 20px;
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            color: #02e3e3;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: #00ffff;
+        }
+    </style>
+    <script>
+        let isVideoFeedDisplayed = false;
+
+        function refreshVideoFeed() {
+            const videoFeed = document.getElementById('video_feed');
+            videoFeed.style.display = "block";
+            document.body.classList.add('video-feed-displayed');
+
+            videoFeed.src = "{{ url_for('video_feed') }}" + '?' + new Date().getTime();
+            videoFeed.onerror = function () {
+                videoFeed.src = "{{ url_for('static', filename='images/default-image.jpg') }}";
+            };
+            videoFeed.onload = function () {
+                if (isVideoFeedDisplayed) {
+                    setTimeout(refreshVideoFeed, 100);
+                }
+            };
+        }
+    </script>
+
+</head>
+
+<body>
+    <div class="container">
+        <div id="left">
+            <h1>Welcome to My App</h1>
+            <br>
+            <p>The Hand Gestures the model currently recognizes:</p>
+            <table style="border: none; border-collapse: collapse;">
+                {% for i in range(0, labels|length, 2) %}
+                <tr>
+                    <td style="border: none; padding: 5px; text-align: left;">{{
+                        labels[i]|replace('[','')|replace(']','')|replace("'",'') }}</td>
+                    {% if i+1 < labels|length %} <td style="border: none; padding: 5px; text-align: left;">{{
+                        labels[i+1]|replace('[','')|replace(']','')|replace("'",'') }}</td>
+                        {% else %}
+                        <td style="border: none; padding: 5px; text-align: left;"></td>
+                        {% endif %}
+                </tr>
+                {% endfor %}
+            </table>
+            <button onclick="refreshVideoFeed()">Start Testing</button>
+            <p>
+                <!-- <a href="{{ url_for('index') }}">Back to Main</a> -->
+                <a href="javascript:window.close()">Exit Page</a>
+            </p>
+        </div>
+        <div id="right">
+            <img id="video_feed" src="" alt="Video Feed">
+        </div>
+    </div>
+</body>
+
+
+</html>

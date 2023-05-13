@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Images</title>
+    <style>
+        
+        body {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            background-color: #5b5b5b;
+            display: flex;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #wrapper {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 10px;
+            padding: 10px;
+            flex-wrap: wrap;
+            border: 2px solid #ffee00;
+            border-radius: 5px;
+            background: #1b1b1b;
+            background-image: url("/static/images/bg.jpg");
+            background-size: cover;
+            box-shadow: 4px 4px 7px #333;
+            overflow: hidden;
+        }
+
+        #left {
+            float: left;
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: left;
+        }
+
+        #right {
+            align-items: center;
+            display: flex;
+            justify-content: left;
+            float: left;
+            width: 50%;
+        }
+
+        video {
+            display: none;
+            border: 3px solid #ffee00;
+            border-radius: 10px;
+            margin-right: 0;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #fff000;
+        }
+
+        p {
+            margin-bottom: 20px;
+            color: #fff000;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            margin-bottom: 10px;
+            background-color: #3c3c3c;
+            color: #fff000;
+            border: none;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #fff000;
+            color: #3c3c3c;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+        }
+
+        #image_count_label {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        a {
+            font-size: 20px;
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            color: #02e3e3;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: #00ffff;
+        }
+
+        #take_img_video_feed {
+            transform: scaleX(-1);
+        }
+    </style>
+    <script>
+        async function startTakingImages() {
+            const dataset_size = 300;
+            const class_num_input = document.getElementById("class_num");
+            const class_num = parseInt(class_num_input.value, 10);
+            const name_input = document.getElementById("name");
+            const name = name_input.value.trim();
+            const video = document.getElementById("take_img_video_feed");
+            video.style.display = "block";
+            const label = document.getElementById("image_count_label");
+            let count = 0;
+
+            // Check if class number and name input is empty
+            if (!class_num || !name) {
+                alert("Please enter class number and name");
+                return;
+            }
+
+            // Check if class number is between 0 - 9
+            if (class_num < 0 || class_num > 9) {
+                alert("Class number must be between 0 and 9");
+                return;
+            }
+
+            // Start the video feed
+            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                .then((stream) => {
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch((err) => {
+                    console.error("An error occurred: " + err);
+                });
+
+            // Wait for the video feed to be ready
+            await new Promise((resolve) => {
+                video.onloadedmetadata = () => resolve();
+            });
+
+            // Take all images first
+            const imageBlobs = [];
+            for (let counter = 0; counter <= dataset_size; counter++) {
+                console.log(`count: ${counter}`)
+                await new Promise((resolve) => setTimeout(resolve, 300));
+                const canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(video, 0, 0);
+
+                canvas.toBlob((blob) => {
+                    imageBlobs.push(blob);
+                    count++;
+                    label.textContent = `Images taken: ${count - 1}/${dataset_size}`;
+                });
+            }
+
+            // Send all images to server
+            const formData = new FormData();
+            for (let i = 0; i < imageBlobs.length; i++) {
+                formData.append("file", imageBlobs[i], `${i}.jpg`);
+            }
+            formData.append("class_num", class_num);
+            formData.append("name", name);
+
+            const response = await fetch("{{ url_for('save_image') }}", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                console.error("Failed to save images", response.statusText);
+            }
+
+            // Stop the video feed
+            if (video.srcObject) {
+                video.srcObject.getTracks()[0].stop();
+            }
+            label.textContent = `Taking Images Done`;
+        }
+
+    </script>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="left">
+            <h1>Take Images</h1>
+            <p>
+                <label for="class_num">Class number:</label>
+                <input type="number" id="class_num" name="class_num" min="0" required>
+            </p>
+            <p>
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </p>
+            <p>
+                <button onclick="startTakingImages()">Start Taking Images</button>
+            </p>
+            <p>
+                <label id="image_count_label"></label>
+            </p>
+            <p>
+                <a href= "javascript:window.close()">Exit Page</a>
+            </p>
+        </div>
+        <div id="right">
+            <p>
+                <video id="take_img_video_feed" autoplay></video>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Model</title>
+    <style>
+        body {
+            display: flex;
+            font-family: Arial, sans-serif;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            background: #262626;
+            background-image: url("/static/images/bg.jpg");
+            background-size: cover;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .ring {
+            display: none;
+            position: relative;
+            width: 150px;
+            height: 150px;
+            background: transparent;
+            border: 3px solid #3c3c3c;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 150px;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            color: #fff000;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #fff000;
+            box-shadow: 0 0 20px rgba(0, 0, 0, .5);
+            margin-bottom: 30px;
+        }
+
+        .ring:before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-top: 3px solid #fff000;
+            border-right: 3px solid #fff000;
+            border-radius: 50%;
+            animation: animateC 2s linear infinite;
+        }
+
+        span {
+            display: block;
+            position: absolute;
+            top: calc(50% - 2px);
+            left: 50%;
+            width: 50%;
+            height: 4px;
+            background: transparent;
+            transform-origin: left;
+            animation: animate 2s linear infinite;
+        }
+
+        span:before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff000;
+            top: -6px;
+            right: -8px;
+            box-shadow: 0 0 20px #fff000;
+        }
+
+        @keyframes animateC {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes animate {
+            0% {
+                transform: rotate(45deg);
+            }
+
+            100% {
+                transform: rotate(405deg);
+            }
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            margin: 0;
+            color: #fff000;
+        }
+
+        p {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        button {
+            background-color: #3c3c3c;
+            color: #fff000;
+            border: none;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #fff000;
+            color: #3c3c3c;
+        }
+
+        button:disabled {
+            background-color: #ddd;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        #video_feed {
+            max-width: 100%;
+            height: auto;
+        }
+
+        #message {
+            font-size: 24px;
+            text-align: center;
+            margin: 0;
+            color: #fff000
+        }
+
+        a {
+            font-size: 20px;
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            color: #02e3e3;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: #00ffff;
+        }
+    </style>
+
+    <script>
+        let trainingInProgress = false;
+
+        async function train_model() {
+            const messageElement = document.getElementById("message");
+            messageElement.innerText = "Please Wait For 10-15 Minutes While Your Hand Gesture Is Being Trained.";
+            const buttonElement = document.getElementById("trainButton");
+            buttonElement.disabled = true;
+
+            // Show loading animation
+            const ring = document.querySelector(".ring");
+            ring.style.display = "block";
+
+            trainingInProgress = true;
+
+            const formData = new FormData();
+            const response = await fetch("{{ url_for('train_model') }}", {
+                method: "POST",
+                body: formData
+            });
+
+            // Hide loading animation
+            ring.style.display = "none";
+            messageElement.innerText = "Hand Gesture Trained";
+            buttonElement.disabled = false;
+
+            trainingInProgress = false;
+        }
+
+        window.addEventListener('beforeunload', function (e) {
+            if (trainingInProgress) {
+                // Cancel the event
+                e.preventDefault();
+                // Chrome requires returnValue to be set
+                e.returnValue = '';
+                // Show a confirmation dialog
+                const confirmationMessage = 'Are you sure you want to leave? Your training is still in progress.';
+                e.returnValue = confirmationMessage;
+                return confirmationMessage;
+            }
+        });
+    </script>
+
+</head>
+
+<body>
+    <div class="center">
+        <h1>Training Model</h1>
+        <p>
+            <button id="trainButton" onclick="train_model()">Train Model</button>
+        </p>
+        <div class="loading-container">
+            <div class="ring">Loading<span></span></div>
+            <p id="message"></p>
+        </div>
+        <p>
+            <a href="#" onclick="window.close()">Exit Page</a>
+        </p>
+    </div>
+</body>
+
+</html>
